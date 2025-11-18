@@ -1,65 +1,74 @@
-// src/TodoPage.jsx
-import { useState, useEffect } from "react";
-
-// Ausgangsituation: keine Beispiel-Todos
-const initialTodos = [];
+import { useState, useEffect } from 'react'
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  updateDoc,
+  orderBy,
+} from 'firebase/firestore'
+import { db } from './firebase'
 
 function TodoPage() {
-  // 1) Beim ersten Render versuchen wir, aus dem LocalStorage zu laden
-  const [todos, setTodos] = useState(() => {
-    try {
-      const saved = localStorage.getItem("todos");
-      if (!saved) return initialTodos;
-      const parsed = JSON.parse(saved);
+  const [todos, setTodos] = useState([])
+  const [newTodo, setNewTodo] = useState('')
 
-      // nur falls es wirklich ein Array ist:
-      if (Array.isArray(parsed)) return parsed;
-      return initialTodos;
-    } catch (err) {
-      console.error("Fehler beim Lesen aus localStorage:", err);
-      return initialTodos;
-    }
-  });
-
-  const [newTodo, setNewTodo] = useState("");
-
-  // 2) Immer wenn sich todos ändern, in localStorage speichern
+  // Firestore-Realtime-Subscription
   useEffect(() => {
+    const todosRef = collection(db, 'todos')
+    const todosQuery = query(todosRef, orderBy('createdAt', 'desc'))
+    const unsubscribe = onSnapshot(
+      todosQuery,
+      (snapshot) => {
+        setTodos(
+          snapshot.docs.map((docSnapshot) => ({
+            id: docSnapshot.id,
+            ...docSnapshot.data(),
+          })),
+        )
+      },
+      (error) => {
+        console.error('Fehler beim Live-Laden der Todos:', error)
+      },
+    )
+
+    return () => unsubscribe()
+  }, [])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    const trimmed = newTodo.trim()
+    if (!trimmed) return
+
+    setNewTodo('')
     try {
-      localStorage.setItem("todos", JSON.stringify(todos));
-    } catch (err) {
-      console.error("Fehler beim Schreiben in localStorage:", err);
+      await addDoc(collection(db, 'todos'), {
+        text: trimmed,
+        done: false,
+        createdAt: serverTimestamp(),
+      })
+    } catch (error) {
+      console.error('Fehler beim Speichern des Todos:', error)
     }
-  }, [todos]);
-
-  // Funktionen zum Hinzufügen, Umschalten und Löschen von Todos
-  function handleSubmit(event) {
-    event.preventDefault();
-    const trimmed = newTodo.trim();
-    if (!trimmed) return;
-
-    setNewTodo("");
-
-    setTodos((prev) => [
-      { id: Date.now(), text: trimmed, done: false },
-      ...prev,
-    ]);
   }
 
-  function toggleTodo(id) {
-    setTodos((prev) => {
-      // 1. Erst alle Todos aktualisieren (done togglen)
-      const updated = prev.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo
-      );
-
-      // 2. Danach sortieren: offene zuerst, erledigte danach
-      return updated.sort((a, b) => Number(a.done) - Number(b.done));
-    });
+  async function toggleTodo(todo) {
+    try {
+      await updateDoc(doc(db, 'todos', todo.id), { done: !todo.done })
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren des Todos:', error)
+    }
   }
 
-  function deleteTodo(id) {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+  async function deleteTodo(id) {
+    try {
+      await deleteDoc(doc(db, 'todos', id))
+    } catch (error) {
+      console.error('Fehler beim Löschen des Todos:', error)
+    }
   }
 
   const openList = todos.filter((t) => !t.done);
@@ -99,7 +108,7 @@ function TodoPage() {
                   className="todo-checkbox"
                   type="checkbox"
                   checked={todo.done}
-                  onChange={() => toggleTodo(todo.id)}
+                  onChange={() => toggleTodo(todo)}
                 />
 
                 <span className="todo-text">{todo.text}</span>
@@ -130,7 +139,7 @@ function TodoPage() {
                   className="todo-checkbox"
                   type="checkbox"
                   checked={todo.done}
-                  onChange={() => toggleTodo(todo.id)}
+                  onChange={() => toggleTodo(todo)}
                 />
 
                 <span className="todo-text todo-text--done">{todo.text}</span>
