@@ -86,7 +86,7 @@ function TodoPage() {
         </form>
 
         <p className="todo-stats">
-          Offene Aufgaben: <strong>{openTodos}</strong> / {todos.length}
+          Offene Aufgaben: {openTodos} / {todos.length}
         </p>
 
         {openList.length === 0 ? (
@@ -116,9 +116,9 @@ function TodoPage() {
           </ul>
         )}
 
-        <h2 className="todo-section-title">
+        <p className="todo-stats">
           Erledigt ({doneTodos} / {todos.length})
-        </h2>
+        </p>
 
         {doneList.length === 0 ? (
           <p className="todo-empty">Noch nichts erledigt.</p>
