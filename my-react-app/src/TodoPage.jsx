@@ -62,67 +62,50 @@ function TodoPage() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   }
 
-  const openTodos = todos.filter((t) => !t.done).length;
-  const doneTodos = todos.filter((t) => t.done).length;
+  const openList = todos.filter((t) => !t.done);
+  const doneList = todos.filter((t) => t.done);
+  const openTodos = openList.length;
+  const doneTodos = doneList.length;
 
   return (
-    <section>
-      <h2>Deine Todos</h2>
+    <section className="todo-page">
+      <div className="todo-card">
+        <h1>Deine Todos</h1>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
-        <input
-          type="text"
-          placeholder="Neue Aufgabe hinzufügen..."
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          style={{
-            padding: "0.5rem 0.75rem",
-            minWidth: "260px",
-            marginRight: "0.5rem",
-          }}
-        />
-        <button style={{ padding: "0.5rem 1.5rem" }} type="submit">
-          Hinzufügen
-        </button>
-      </form>
+        <form className="todo-form" onSubmit={handleSubmit}>
+          <input
+            className="todo-input"
+            type="text"
+            placeholder="Neue Aufgabe hinzufügen..."
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+          />
+          <button className="todo-button" type="submit">
+            Hinzufügen
+          </button>
+        </form>
 
-      <p>
-        Offene Aufgaben: {openTodos} / {todos.length}
-      </p>
+        <p className="todo-stats">
+          Offene Aufgaben: <strong>{openTodos}</strong> / {todos.length}
+        </p>
 
-      {todos.filter((t) => !t.done).length === 0 ? ( // ⬅️⭐ geändert
-        <p>Keine offenen Todos. 🎉</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, marginTop: "1rem" }}>
-          {todos
-            .filter((t) => !t.done) // ⬅️⭐ NEU: nur offene Todos
-            .map((todo) => (
-              <li
-                key={todo.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  padding: "0.5rem 0",
-                }}
-              >
+        {openList.length === 0 ? (
+          <p className="todo-empty">Keine offenen Todos. 🎉</p>
+        ) : (
+          <ul className="todo-list">
+            {openList.map((todo) => (
+              <li className="todo-item" key={todo.id}>
                 <input
+                  className="todo-checkbox"
                   type="checkbox"
                   checked={todo.done}
                   onChange={() => toggleTodo(todo.id)}
-                  style={{ transform: "scale(1.5)" }}
                 />
 
-                <span
-                  style={{
-                    flex: 1,
-                  }}
-                >
-                  {todo.text}
-                </span>
+                <span className="todo-text">{todo.text}</span>
 
                 <button
-                  style={{ padding: "0.25rem 1.5rem" }}
+                  className="todo-delete"
                   type="button"
                   onClick={() => deleteTodo(todo.id)}
                 >
@@ -130,48 +113,40 @@ function TodoPage() {
                 </button>
               </li>
             ))}
-        </ul>
-      )}
+          </ul>
+        )}
 
-      <p style={{ marginTop: "2rem" }}>
-        Erledigte Aufgaben: {doneTodos} / {todos.length}
-      </p>
+        <h2 className="todo-section-title">
+          Erledigt ({doneTodos} / {todos.length})
+        </h2>
 
-      <ul style={{ listStyle: "none", padding: 0, marginTop: "1rem" }}>
-        {todos
-          .filter((t) => t.done) // ⬅️⭐ NEU: nur erledigte Todos
-          .map((todo) => (
-            <li
-              key={todo.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                padding: "0.5rem 0",
-                opacity: 0.6,
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={todo.done}
-                onChange={() => toggleTodo(todo.id)}
-                style={{ transform: "scale(1.5)" }}
-              />
+        {doneList.length === 0 ? (
+          <p className="todo-empty">Noch nichts erledigt.</p>
+        ) : (
+          <ul className="todo-list todo-list--done">
+            {doneList.map((todo) => (
+              <li className="todo-item todo-item--done" key={todo.id}>
+                <input
+                  className="todo-checkbox"
+                  type="checkbox"
+                  checked={todo.done}
+                  onChange={() => toggleTodo(todo.id)}
+                />
 
-              <span style={{ flex: 1, textDecoration: "line-through" }}>
-                {todo.text}
-              </span>
+                <span className="todo-text todo-text--done">{todo.text}</span>
 
-              <button
-                style={{ padding: "0.25rem 1.5rem" }}
-                type="button"
-                onClick={() => deleteTodo(todo.id)}
-              >
-                ✕
-              </button>
-            </li>
-          ))}
-      </ul>
+                <button
+                  className="todo-delete"
+                  type="button"
+                  onClick={() => deleteTodo(todo.id)}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
