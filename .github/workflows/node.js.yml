@@ -1,8 +1,8 @@
-name: Deploy React app to GitHub Pages
+name: Deploy Vite app to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # anpassen, falls dein Branch anders heißt
+    branches: [ main ]   # falls dein Branch anders heißt, hier anpassen
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -27,17 +27,21 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: my-react-app/package-lock.json
 
       - name: Install dependencies
+        working-directory: my-react-app
         run: npm ci
 
       - name: Build project
+        working-directory: my-react-app
         run: npm run build
 
       - name: Upload built site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          # Vite build output
+          path: my-react-app/dist
 
   deploy:
     needs: build
