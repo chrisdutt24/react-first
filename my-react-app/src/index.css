@@ -1,5 +1,6 @@
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   line-height: 1.5;
   color: #1f2933;
   background-color: #f4f6fb;
@@ -189,7 +190,14 @@ body {
     text-align: center;
   }
 
-  .todo-item {
-    align-items: flex-start;
+  /* Mobile View */
+  @media (max-width: 600px) {
+    .todo-item {
+      align-items: center; /* wieder normal */
+    }
+
+    .todo-text {
+      align-self: flex-start; /* nur der Text bricht oberkantig */
+    }
   }
 }
