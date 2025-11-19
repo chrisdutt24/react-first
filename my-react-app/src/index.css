@@ -445,8 +445,4 @@ body {
     width: 100%;
     text-align: center;
   }
-
-  .todo-item {
-    align-items: flex-start;
-  }
 }
