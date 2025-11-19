@@ -21,7 +21,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: clamp(1rem, 4vw, 3rem);
+  padding: clamp(4rem, 4vw, 3rem);
 }
 
 .todo-page {
@@ -51,9 +51,8 @@ body {
 
 .todo-top-bar {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
 }
 
 .todo-label {
@@ -78,6 +77,7 @@ body {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 8px 18px rgba(99, 102, 241, 0.25);
+  margin-left: auto;
 }
 
 .todo-menu-toggle span {
@@ -345,11 +345,6 @@ body {
   .todo-card {
     border-radius: 1rem;
     padding: 1.5rem;
-  }
-
-  .todo-top-bar {
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .todo-menu {

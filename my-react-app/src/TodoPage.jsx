@@ -154,7 +154,6 @@ function TodoPage() {
             <p className="todo-label">Aktuelle Liste</p>
             <h1>{activeList?.name ?? "Todo-Liste"}</h1>
           </div>
-
           <button
             type="button"
             className={`todo-menu-toggle ${isMenuOpen ? "is-open" : ""}`}
@@ -167,7 +166,6 @@ function TodoPage() {
             <span />
           </button>
         </div>
-
         {isMenuOpen && (
           <>
             <button
@@ -217,9 +215,7 @@ function TodoPage() {
                 <button
                   className="todo-menu-submit"
                   type="submit"
-                  disabled={
-                    !canAddList || newListName.trim().length === 0
-                  }
+                  disabled={!canAddList || newListName.trim().length === 0}
                 >
                   Liste erstellen
                 </button>
