@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "todo-lists-v1";
 const MAX_LISTS = 5;
@@ -55,6 +55,10 @@ function TodoPage() {
   const [newTodo, setNewTodo] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [editingListId, setEditingListId] = useState(null);
+  const [editingListName, setEditingListName] = useState("");
+  const menuRef = useRef(null);
+  const toggleRef = useRef(null);
 
   const { lists, activeListId } = listState;
   const activeList =
@@ -77,6 +81,24 @@ function TodoPage() {
       })
     );
   }, [lists, activeList?.id, activeListId]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    function handleClickOutside(event) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        toggleRef.current &&
+        !toggleRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
 
   const updateActiveListTodos = (updater) => {
     setListState((prev) => {
@@ -146,6 +168,54 @@ function TodoPage() {
     setIsMenuOpen(false);
   }
 
+  function startRename(list) {
+    setEditingListId(list.id);
+    setEditingListName(list.name);
+  }
+
+  function handleCancelRename() {
+    setEditingListId(null);
+    setEditingListName("");
+  }
+
+  function handleRenameSubmit(event) {
+    event.preventDefault();
+    if (!editingListId) return;
+    const trimmed = editingListName.trim();
+    if (!trimmed) return;
+
+    setListState((prev) => ({
+      ...prev,
+      lists: prev.lists.map((list) =>
+        list.id === editingListId ? { ...list, name: trimmed } : list
+      ),
+    }));
+    handleCancelRename();
+  }
+
+  function handleDeleteList(id) {
+    if (lists.length <= 1) {
+      alert("Du brauchst mindestens eine Liste.");
+      return;
+    }
+
+    setListState((prev) => {
+      const remaining = prev.lists.filter((list) => list.id !== id);
+      if (remaining.length === 0) {
+        const fallback = createList("Meine Todos");
+        return { lists: [fallback], activeListId: fallback.id };
+      }
+
+      const nextActiveId =
+        prev.activeListId === id ? remaining[0].id : prev.activeListId;
+      return { lists: remaining, activeListId: nextActiveId };
+    });
+
+    if (editingListId === id) {
+      handleCancelRename();
+    }
+  }
+
   return (
     <section className="todo-page">
       <div className="todo-card">
@@ -157,6 +227,7 @@ function TodoPage() {
           <button
             type="button"
             className={`todo-menu-toggle ${isMenuOpen ? "is-open" : ""}`}
+            ref={toggleRef}
             onClick={() => setIsMenuOpen((prev) => !prev)}
             aria-label="Listenmenü öffnen"
             aria-pressed={isMenuOpen}
@@ -174,8 +245,7 @@ function TodoPage() {
               onClick={() => setIsMenuOpen(false)}
               aria-label="Listenmenü schließen"
             />
-
-            <div className="todo-menu" role="menu">
+            <div className="todo-menu" role="menu" ref={menuRef}>
               <div className="todo-menu-header">
                 <div>
                   <p className="todo-label">Listen</p>
@@ -188,17 +258,68 @@ function TodoPage() {
 
               <ul className="todo-menu-list">
                 {lists.map((list) => (
-                  <li key={list.id}>
-                    <button
-                      type="button"
-                      className={`todo-menu-item${
-                        list.id === activeList?.id ? " is-active" : ""
-                      }`}
-                      onClick={() => handleSwitchList(list.id)}
-                    >
-                      <span>{list.name}</span>
-                      <small>{list.todos?.length ?? 0} Todos</small>
-                    </button>
+                  <li key={list.id} className="todo-menu-row">
+                    {editingListId === list.id ? (
+                      <form
+                        className="todo-menu-rename"
+                        onSubmit={handleRenameSubmit}
+                      >
+                        <input
+                          type="text"
+                          value={editingListName}
+                          onChange={(event) =>
+                            setEditingListName(event.target.value)
+                          }
+                          autoFocus
+                          placeholder="Neuer Listenname..."
+                        />
+                        <div className="todo-menu-rename-actions">
+                          <button type="submit">Speichern</button>
+                          <button
+                            type="button"
+                            onClick={handleCancelRename}
+                          >
+                            Abbrechen
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={`todo-menu-item${
+                            list.id === activeList?.id ? " is-active" : ""
+                          }`}
+                          onClick={() => handleSwitchList(list.id)}
+                        >
+                          <span>{list.name}</span>
+                          <small>{list.todos?.length ?? 0} Todos</small>
+                        </button>
+                        <div className="todo-menu-actions">
+                          <button
+                            type="button"
+                            className="todo-menu-action"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              startRename(list);
+                            }}
+                          >
+                            Umbenennen
+                          </button>
+                          <button
+                            type="button"
+                            className="todo-menu-action todo-menu-action--danger"
+                            disabled={lists.length <= 1}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleDeleteList(list.id);
+                            }}
+                          >
+                            Löschen
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
