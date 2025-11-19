@@ -21,7 +21,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: clamp(4rem, 4vw, 3rem);
+  padding: 4rem 2vw 3rem;
 }
 
 .todo-page {
