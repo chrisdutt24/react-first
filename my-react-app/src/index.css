@@ -31,7 +31,7 @@ body {
 }
 
 .todo-card {
-  width: 420px;
+  width: 380px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 1.25rem;
   padding: clamp(1.5rem, 5vw, 2.75rem);
